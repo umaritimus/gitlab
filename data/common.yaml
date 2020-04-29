@@ -1,0 +1,9 @@
+---
+gitlab::runner::ensure     : 'present'
+gitlab::runner::installdir : 'd:/gitlab'
+gitlab::runner::package    : 'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-windows-amd64.exe'
+gitlab::runner::runnername : 'TEMP123'
+gitlab::runner::token      : 'gitlab-runner-ci-token'
+gitlab::runner::tags       : ['1potato','2potato','3potato','pork']
+gitlab::runner::user       : 'domain/user'
+gitlab::runner::password   : 'password'
