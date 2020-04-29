@@ -69,7 +69,7 @@ class gitlab::runner::install (
                 ) `
                 -Wait `
                 -NoNewWindow `
-                -PassThru
+                  | Out-Null
             )
           } Catch {
             Exit 1
@@ -82,23 +82,21 @@ class gitlab::runner::install (
     }
 
     exec { 'Install gitlab-runner service' :
-      command => Sensitive(@("EOT")),
+      command   => Sensitive(@("EOT")),
           Try {
-            Exit (
-              If (-not (Get-Service gitlab-runner -ErrorAction SilentlyContinue)) {
-                Start-Process `
-                  -FilePath ${regsubst("\'${installdir}/gitlab-runner.exe\'", '(/|\\\\)', '\\', 'G')} `
-                  -WorkingDirectory ${regsubst("\'${installdir}\'", '(/|\\\\)', '\\', 'G')} `
-                  -ArgumentList @(
-                    "install",
-                    "--user ${user}",
-                    "--password ${password}"
-                  ) `
-                  -Wait `
-                  -NoNewWindow `
-                  -PassThru
-              } Else { 0 }
-            )
+            If (-not (Get-Service 'gitlab-runner' -ErrorAction SilentlyContinue)) {
+              Start-Process `
+                -FilePath ${regsubst("\'${installdir}/gitlab-runner.exe\'", '(/|\\\\)', '\\', 'G')} `
+                -WorkingDirectory ${regsubst("\'${installdir}\'", '(/|\\\\)', '\\', 'G')} `
+                -ArgumentList @(
+                  "install",
+                  "--user ${regsubst($user, '(/|\\\\)', '\\', 'G')}",
+                  "--password ${password}"
+                ) `
+                -Wait `
+                -NoNewWindow `
+                  | Out-Null
+            }
           } Catch {
             Exit 1
           }
@@ -106,15 +104,11 @@ class gitlab::runner::install (
       provider  => powershell,
       logoutput => true,
       onlyif    => Sensitive(@("EOT")),
-          Try {
-            Exit (
-              If (Get-Service gitlab-runner -ErrorAction SilentlyContinue) {
-                1
-              } Else { 0 }
-            )
-          } Catch {
-            Exit 1
-          }
+          Exit (
+            $(If (Get-Service 'gitlab-runner' -ErrorAction SilentlyContinue) {
+              1
+            } Else { 0 })
+          )
         |-EOT
       require   => Exec['Register gitlab-runner'],
     }
