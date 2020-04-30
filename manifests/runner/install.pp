@@ -15,13 +15,6 @@ class gitlab::runner::install (
   $password   = undef,
 ) {
 
-  notify { "installdir = ${regsubst("\'${installdir}\'", '(/|\\\\)', '\\', 'G')}" : }
-  notify { "package = ${package}" : }
-  notify { "runnername = ${runnername}" : }
-  notify { "token = ${token}" : }
-  notify { "tags = ${tags.convert_to(Array).join(',')}" : }
-  notify { "user = ${user}" : }
-
   if ($ensure == 'present') {
 
     exec { 'Download gitlab-runner' :
